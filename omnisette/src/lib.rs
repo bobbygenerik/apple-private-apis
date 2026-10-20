@@ -71,6 +71,9 @@ pub const DEFAULT_ANISETTE_URL: &str = "https://ani.f1sh.me/";
 
 pub const DEFAULT_ANISETTE_URL_V3: &str = "https://ani.sidestore.io";
 
+mod login_identity;
+pub use login_identity::{account_login_info, restored_account_login_info, account_delegate_info, account_uses_remote_compatibility};
+
 pub trait AnisetteProvider {
     fn get_anisette_headers(&mut self) -> impl std::future::Future<Output = Result<HashMap<String, String>, AnisetteError>> + Send;
     fn get_2fa_code(&mut self) -> impl std::future::Future<Output = Result<u32, AnisetteError>> + Send {

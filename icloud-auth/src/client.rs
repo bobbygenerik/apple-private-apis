@@ -113,6 +113,9 @@ pub struct PersistAccountData {
     #[serde(serialize_with = "bin_serialize", deserialize_with = "bin_deserialize")]
     pub hashed_password: Vec<u8>,
     pub postdata_done: Option<bool>,
+    /// The AuthKit platform that minted these tokens. Absent in legacy records.
+    #[serde(default)]
+    pub gsa_client_info: Option<String>,
     
     pub tokens: HashMap<String, FetchedToken>,
     pub adsid: String,
@@ -810,6 +813,7 @@ impl<T: AnisetteProvider> AppleAccount<T> {
             warn!("Resetting for changed username, was {} now is {}", current_persist.username, username);
         }
         current_persist.username = username.to_string();
+        current_persist.gsa_client_info = Some(self.client_info.mme_client_info_akd.clone());
         current_persist.hashed_password = hashed_password.to_vec().into();
 
         let status = res.get("Status").unwrap().as_dictionary().unwrap();
