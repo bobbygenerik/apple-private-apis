@@ -116,6 +116,9 @@ pub struct PersistAccountData {
     /// The AuthKit platform that minted these tokens. Absent in legacy records.
     #[serde(default)]
     pub gsa_client_info: Option<String>,
+    /// Provider that issued this account. None retains pre-adapter behavior.
+    #[serde(default)]
+    pub anisette_provider: Option<String>,
     
     pub tokens: HashMap<String, FetchedToken>,
     pub adsid: String,

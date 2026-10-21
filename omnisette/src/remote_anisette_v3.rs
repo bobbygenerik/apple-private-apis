@@ -364,6 +364,8 @@ impl AnisetteClient {
 
 
 pub struct RemoteAnisetteProviderV3 {
+    #[cfg(target_os = "android")]
+    native: Option<crate::native_process::NativeProvider>,
     client_url: String,
     client: Option<AnisetteClient>,
     pub state: Option<AnisetteState>,
@@ -374,6 +376,8 @@ pub struct RemoteAnisetteProviderV3 {
 impl RemoteAnisetteProviderV3 {
     pub fn new(url: String, info: LoginClientInfo, configuration_path: PathBuf) -> RemoteAnisetteProviderV3 {
         RemoteAnisetteProviderV3 {
+            #[cfg(target_os = "android")]
+            native: None,
             client_url: url,
             client: None,
             state: None,
@@ -383,8 +387,22 @@ impl RemoteAnisetteProviderV3 {
     }
 }
 
+#[cfg(target_os = "android")]
+impl RemoteAnisetteProviderV3 {
+    pub fn select_native(&mut self, native: bool) -> Result<(), AnisetteError> {
+        if native {
+            let root = self.configuration_path.parent().ok_or(AnisetteError::Misc)?.to_path_buf();
+            if !root.join("native_provider_runtime/worker.jar").is_file() { return Err(AnisetteError::MissingLibraries); }
+            if self.native.is_none() { self.native = Some(crate::native_process::NativeProvider::new(root, self.info.clone())); }
+        } else { self.native = None; }
+        Ok(())
+    }
+}
+
 impl AnisetteProvider for RemoteAnisetteProviderV3 {
     async fn get_anisette_headers(&mut self) -> Result<HashMap<String, String>, AnisetteError> {
+        #[cfg(target_os = "android")]
+        if let Some(native) = &mut self.native { return native.headers().await; }
         if self.client.is_none() {
             self.client = Some(AnisetteClient::new(self.client_url.clone(), self.info.clone()).await?);
         }

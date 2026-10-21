@@ -71,6 +71,8 @@ pub const DEFAULT_ANISETTE_URL: &str = "https://ani.f1sh.me/";
 
 pub const DEFAULT_ANISETTE_URL_V3: &str = "https://ani.sidestore.io";
 
+pub mod native_provider_policy;
+mod native_process;
 mod login_identity;
 pub use login_identity::{account_login_info, restored_account_login_info, account_delegate_info, account_uses_remote_compatibility};
 
@@ -146,6 +148,8 @@ impl<T: AnisetteProvider> AnisetteClient<T> {
             generated_at: SystemTime::UNIX_EPOCH,
         }
     }
+
+    pub fn invalidate_headers(&mut self) { self.generated_at = SystemTime::UNIX_EPOCH; }
 
     pub async fn get_headers(&mut self) -> Result<&HashMap<String, String>, AnisetteError> {
         let last_generated = SystemTime::now().duration_since(self.generated_at).unwrap_or(Duration::from_secs(120));
